@@ -1,0 +1,250 @@
+.good {
+	fill: green;
+}
+.good div {
+	background-color: green;
+}
+text.good {
+	fill: white;
+}
+.crit {
+	fill: red;
+}
+.crit div {
+	background-color: red;
+}
+text.crit {
+	fill: white;
+}
+.warn {
+	fill: yellow;
+}
+.warn div {
+	background-color: yellow;
+}
+text.warn text{
+	fill: black;
+}
+.axis path,
+.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+.d3-tip {
+	line-height: 1;
+	font-weight: bold;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+	margin: -1px 0 0 0;
+	top: 100%;
+	left: 0;
+}
+.bloc {
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+
+.join {
+	display: inline-block;
+}
+
+li[class~="noCheck"] .jstree-checkbox {
+	display:none;
+}
+.ajax_busy {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('png/ajax-loader.gif') 
+                50% 50% 
+                no-repeat;
+}
+body.loading {
+    overflow: hidden;   
+}
+body.loading .ajax_busy {
+    display: block;
+    z-index: 3000;
+}
+th a {
+	color: black;
+}
+#currentTable {
+	width: 100%
+}
+.tree {
+    min-height:20px;
+    padding:19px;
+    margin-bottom:20px;
+    background-color:#fbfbfb;
+    border:1px solid #999;
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+}
+.tree li {
+    list-style-type:none;
+    margin:0;
+    padding:10px 5px 0 5px;
+    position:relative
+}
+.tree li::before, .tree li::after {
+    content:'';
+    left:-20px;
+    position:absolute;
+    right:auto
+}
+.tree li::before {
+    border-left:1px solid #999;
+    bottom:50px;
+    height:100%;
+    top:0;
+    width:1px
+}
+.tree li::after {
+    border-top:1px solid #999;
+    height:20px;
+    top:25px;
+    width:25px
+}
+.tree li span {
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border:1px solid #999;
+    border-radius:5px;
+    display:inline-block;
+    padding:3px 8px;
+    text-decoration:none
+}
+.tree li.parent_li>span {
+    cursor:pointer
+}
+.tree>ul>li::before, .tree>ul>li::after {
+    border:0
+}
+.tree li:last-child::before {
+    height:30px
+}
+.tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
+    background:#eee;
+    border:1px solid #94a0b4;
+    color:#000
+}
+.dbOpen>img {
+	content:url(png/glyphicons_142_database_minus.png);
+}
+.dbClose>img {
+	content:url(png/glyphicons_141_database_plus.png);
+}
+
+.dirOpen>img {
+  content:url(png/glyphicons_144_folder_open.png);
+}
+.dirClose>img {
+  content:url(png/glyphicons_440_folder_closed.png);
+}
+.file>img{
+  content:url(png/glyphicons_036_file.png);
+}
+
+.tabClose>img {
+	content:url(png/closedTable.png);
+}
+.tabOpen>img {
+	content:url(png/openTable.png);
+}
+.column>img {
+	content:url(png/Pillar_column_icon.png);
+}
+
+.string>img {
+  content:url(png/string.png);
+}
+.decimal>img {
+  content:url(png/dec.png);
+}
+.int>img {
+  content:url(png/hash.png);
+}
+.boolean>img {
+  content:url(png/bool.png);
+}
+.tab>img {
+  content:url(png/glyphicons_119_table.png);
+}
+.box {
+	margin-right: 5px !important;
+  margin-top: 9px !important;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="text"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.dropdown-menu > li > p {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333333;
+  white-space: nowrap;
+}

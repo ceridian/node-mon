@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+	<div id="graph" style="float:right;"></div>
+	<div id='legend'></div>
+	<div id='swordfishGraph' class="modal fade" role="dialog" tabindex='-1', aria-labeledby='swordfishGraphHeader', aria-hidden='true'>
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button class="close" type="button" data-dismiss="modal">
+						<span aria-hidden="true">&times;</span>
+						<span class="sr-only">Close</span>
+					</button>
+					<h4 id="swordfishGraphHeader" class="modal-title">
+						Table count over time
+					</h4>
+				</div>
+				<div id="swordfishGraphBody" class="modal-body">
+					<div id="swordfishGraphMenu">
+						<ul style="margin-bottom:15px;" class="nav nav-pills" role="tablist">
+							<li role"presentation" class="active"><a onClick="buildGraph()" href="#">Build</a></li>
+						</ul>
+					</div>
+					<div id="swordfishGraphTree"></div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-default" type='button' data-dismis='modal'>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+.legend {
+	font-size: 16px;
+	font-weight: bold;
+	padding-top: 50px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  stroke-width: 1.5px;
+  fill-opacity: 0;
+}
+
+</style>
+<link rel="stylesheet" type="text/css" href="css/jake.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	var c = {};
+	c.name = 'swordfish';
+	c.ipAddr = '10.200.1.20';
+	window.ip = c.ipAddr;
+	tablePicker(c);
+	$('#swordfishGraph').modal('show');
+});
+
+function tablePicker(cluster){
+	var name = cluster.name;
+	var ip = cluster.ipAddr;
+	$('#IP').val(ip);
+	if(!name){
+		console.log('no name for tablePicker');
+	}else{
+		if(!ip){
+			ip = $('#IP'+name).val();
+		}
+		var load = {}
+		load.ip = ip;
+		$.ajax({
+			url: "/root",
+			type: "POST",
+			contentType: "application/json",
+			data: JSON.stringify(load),
+			processData: false,
+			complete: function(root){
+				var parsed = JSON.parse(root.responseText);
+				var h = '<div class="tree well"><ul>';
+				parsed.forEach(function(v){
+					//<input type="checkbox" class="box boxDB" id="BOX'+v+'" />
+					var str = '<li><div id="'+v+'"><span class="dbClose"><img /> '+v+' </span></div></li>';
+					h += str;
+				});
+				h += '</ul></div>';
+				$('#swordfishGraphTree').html(h);
+				$('.dbClose').on('click', function (e) {
+					var targ = e.currentTarget;
+					var cl = targ.className;
+					var id = $(targ).parent().attr('id');
+					if(cl == 'dbOpen'){
+						$('#'+id+'>span').addClass('dbClose').removeClass('dbOpen');
+						dbClose(id, ip);
+					}else{
+						$('#'+id+'>span').addClass('dbOpen').removeClass('dbClose');
+						dbOpen(id, ip);
+					}
+				});
+			}
+		});
+	}
+}
+
+function dbClose(id, ip){
+	$('#'+id+'>ul').hide();
+}
+function dbOpen(id, ip){
+	var load = {};
+	load.ip = ip;
+	load.db = id;
+	console.log(load);
+	$.ajax({
+		url: "/child",
+		type: "POST",
+		contentType: "application/json",
+		data: JSON.stringify(load),
+		processData: false,
+		complete: function(data){
+			var tables = JSON.parse(data.responseText);
+			var h = '<ul class="tables">';
+			tables.forEach(function(v){
+				//<div id="'+id+'_'+v.text+'">
+				var str = '<li><input type="checkbox" class="box boxTab" id="'+id+'_'+v.text+'" /><span class="tab"><img /> '+v.text+' </span></li>';
+				h += str;
+			});
+			h += '</ul>';
+			$('#'+id+'>ul').remove();
+			$('#'+id).append(h);
+			/*$('.tabClose').on('click', function (e) {
+				var targ = e.currentTarget;
+				var cl = targ.className;
+				var tab = $(targ).parent().attr('id');
+				console.log($('#'+id).text());
+				if(cl == 'tabOpen'){
+					$('#'+tab+'>span').addClass('tabClose').removeClass('tabOpen');
+					tabClose(tab);
+				}else{
+					$('#'+tab+'>span').addClass('tabOpen').removeClass('tabClose');
+					tabOpen(id, tab, ip);
+				}
+			});*/
+		}
+	});
+}
+
+function buildGraph(){
+	var checked = $('input:checked');
+	var ip = window.ip;
+	var hold = [];
+	for(var i=0;i<checked.length;i++){
+		var id = checked[i].id;
+		var cut = id.split('_');
+		var db = cut[0];
+		var table = cut[1];
+		var load = {};
+		load.ip = ip;
+		load.tableName = table;
+		load.dbName = db;
+		hold.push(load);
+	}
+	drawTables(hold);
+}
+
+/*function tabClose(id){
+	$('#'+id+'>ul').hide();
+}
+function tabOpen(id, tab, ip){
+	var load = {};
+	load.ip = ip;
+	load.db = id;
+	load.table = tab;
+	$.ajax({
+		url: "/columns",
+		type: "POST",
+		contentType: "application/json",
+		data: JSON.stringify(load),
+		processData: false,
+		complete: function(data){
+			var columns = JSON.parse(data.responseText);
+			var h = '<ul class="columns">';
+			columns.forEach(function(v){
+				var t;
+				if(v.type == 'boolean'){
+					t = 'boolean';
+				}
+				if(v.type == 'string'){
+					t = 'string';
+				}
+				if(v.type == 'int'){
+					t = 'int';
+				}
+				if(v.type == 'decimal'){
+					t = 'decimal';
+				}
+				var str = '<li><div id="'+v.text+'"><input type="checkbox" class="box boxCol" id="cBOX'+v.text+'" /><span class="'+t+'"><img /> '+v.text+' </span></div></li>';
+				h += str;
+			});
+			h += '</ul>';
+			$('#'+tab+'>ul').remove();
+			$('#'+tab).append(h);
+		}
+	});
+}*/
+
+function drawTables(arr){
+	//$.getJSON('/tableCounts', function(data){
+		/*CLUSTERId: 1
+		count: 173136
+		createdAt: "2014-10-20T14:10:56.000Z"
+		//          
+		dbName: "mariachi"
+		id: 1
+		tableName: "items"
+		updatedAt: "2014-10-20T16:48:23.000Z"
+		*/
+	console.log(arr);
+	$.ajax({
+		url: "/tableCounts",
+		type: "POST",
+		contentType: "application/json",
+		data: JSON.stringify(arr),
+		processData: false,
+		complete: function(data){
+			var parsed = JSON.parse(data.responseText);
+			parsed.forEach(function(d){
+				d.createdAt = new Date(d.createdAt);
+				d.count = +d.count;
+			});
+
+			var margin = {top: 50, right: 50, bottom: 70, left: 50};
+			var	width = 1200 - margin.left - margin.right;
+			var	height = 620 - margin.top - margin.bottom;
+
+			var xExt = d3.extent(parsed, function(d) { return d.createdAt; });
+			var yExt = d3.extent(parsed, function(d) { return d.count; });
+
+			var x = d3.time.scale()
+				.range([0, width])
+				.domain(xExt);
+
+			var y = d3.scale.linear()
+				.range([height, 0])
+				.domain(yExt);
+
+			console.log(y(100000000));
+			var da = new Date();
+			console.log(x(da));
+
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom")
+				.ticks(d3.time.days)
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left")
+				.ticks(10)
+				.tickFormat(d3.format("s"));
+
+			var color = d3.scale.category20();
+
+			var line = d3.svg.line()
+				.x(function(d) { return x(d.createdAt); })
+				.y(function(d) { return y(d.count); });
+
+			var svg = d3.select("#graph").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			svg.append("g")
+				.attr("class", "x axis")
+				.attr("transform", "translate(0," + height + ")")
+				.call(xAxis)
+				.selectAll('text')
+					.style("text-anchor", "end")
+					.attr("dx", "-.8em")
+					.attr("dy", ".15em")
+					.attr("transform", function(d) {
+						return "rotate(-45)" 
+					});
+
+			svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis)
+				.append("text")
+				.attr("transform", "rotate(-90)")
+				.attr("y", 6)
+				.attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("# of Rows");
+
+			var dataNest = d3.nest()
+				.key(function(d) { return d.tableName; })
+				.entries(parsed);
+
+			var hold = '<ul class="legend">';
+
+			dataNest.forEach(function(v, i){
+
+				svg.append('path')
+					.attr('class', 'line')
+					.style('stroke', function(){
+						return v.color = color(v.values[0].dbName+'_'+v.key+'_line')
+					})
+					.attr('id', v.values[0].dbName+'_'+v.key+'_line')
+					.attr('d', line(v.values));
+
+				hold += '<li style="color:'+color(v.values[0].dbName+'_'+v.key+'_line')+';"><input type="checkbox" id="'+v.values[0].dbName+'_'+v.key+'_box"> '+v.values[0].dbName+'_'+v.key+'</li>';
+
+				/*d3.select('#holder')
+					.append('text')
+						.attr('class', 'legend')
+						.style('fill', function(){
+							return v.color = color(v.key);
+						})
+						.on("click", function(){
+							var active   = v.active ? false : true,
+							newOpacity = active ? 0 : 1;
+							d3.select("#"+v.values[0].dbName+'_'+v.key)
+								.transition().duration(100)
+								.style("opacity", newOpacity)
+								.style('fill', function(){
+									return v.color = color(v.values[0].dbName+'_'+v.key);
+								});
+							v.active = active; 
+						})
+						.text(v.key);
+				$('#holder').append('<br>');*/
+			});
+			hold += '</ul>';
+			$('#legend').html(hold);
+		}
+	});
+}
+</script>
+</body>
+

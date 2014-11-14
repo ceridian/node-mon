@@ -1,0 +1,272 @@
+extends layout
+
+block content
+  div
+    nav.navbar.navbar-inverse(role='navigation')
+        .container-fluid
+          .navbar-header
+            button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+            a.navbar-brand(href='#') Data Realty
+          #bs-example-navbar-collapse-1.collapse.navbar-collapse
+            ul.nav.navbar-nav
+              li.dropdown
+                a.dropdown-toggle(href='#', data-toggle='dropdown')
+                  | Menu
+                  span.caret
+                ul.dropdown-menu(role='menu')
+                  li
+                    p Reports
+                  li.divider
+                  li
+                    a(href='#', onclick='currentCounts()') Row Counts
+                  li.divider
+            ul.nav.navbar-nav.navbar-right
+              li
+                a(href='#') Username
+  #anchor
+    #accordion.panel-group
+      each cluster in clusters
+        if cluster.error
+          .panel.panel-default
+            div(id= "#{ cluster.name }Header" class= 'panel-heading bad')
+              h4.panel-title
+                a(data-toggle='collapse', data-parent='#accordion', href= "##{ cluster.name }") #{ cluster.name.toUpperCase() }
+            div(id= "#{ cluster.name }" class= 'panel-collapse collapse')
+              div(id= "#{ cluster.name }DIV" class= 'panel-body')
+                div(style='width: 100%; height: 400px; display: inline-block; position: relative;')
+                  h1(style='width:100%;height:100%;color:red;') Connection Error
+                  div(id= "DIS#{ cluster.name }" style='width: 100px;')
+                  div(id= "SERV#{ cluster.name }" style='position: absolute; top: 20px; left: 17%;')
+                  div(id= "USER#{ cluster.name }" style='position: absolute; top: 10px; left: 37%;')
+                  div(id= "DIAL#{ cluster.name }" style='position: absolute; top: 20px; left: 82%; display: block;')
+        else
+          .panel.panel-default
+            div(id= "#{ cluster.name }Header" class= 'panel-heading good')
+              h4.panel-title
+                a(data-toggle='collapse', data-parent='#accordion', href= "##{ cluster.name }") #{ cluster.name.toUpperCase() }
+            div(id= "#{ cluster.name }" class= 'panel-collapse collapse')
+              div(id= "#{ cluster.name }DIV" class= 'panel-body')
+                embed(id="IP#{ cluster.name }", hidden='true', value="#{ cluster.ipAddr }")
+                div(style='width: 100%; height: 400px; display: inline-block; position: relative;')
+                  div(id= "DIS#{ cluster.name }" style='width: 100px;')
+                  div(id= "SERV#{ cluster.name }" style='position: absolute; top: 20px; left: 17%;')
+                  div(id= "USER#{ cluster.name }" style='position: absolute; top: 10px; left: 37%;')
+                  div(id= "DIAL#{ cluster.name }" style='position: absolute; top: 20px; left: 82%; display: block;')
+  #hiveDis.modal.fade(role='dialog', tabindex='-1', aria-labeledby='hiveLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#hiveLabel.modal-title Hive
+        #hiveBody.modal-body
+          embed#IP(hidden='true')
+          #browserHIVE
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+  #hdfsDis.modal.fade(role='dialog', tabindex='-1', aria-labeledby='hdfsLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#hdfsLabel.modal-title HDFS
+        #hdfsBody.modal-body
+          #browserHDFS
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+  #joinStart.modal.fade(role='dialog', tabindex='-1', aria-labeledby='joinLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#joinLabel.modal-title Hive
+        #joinBody.modal-body
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+  #reportSelect.modal.fade(role='dialog', tabindex='-1', aria-labeledby='reportLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#reportLabel.modal-title Cluster for Report
+        #reportBody.modal-body
+          h4 Warning: Takes a long time.
+          select#clusterSelect
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+          button.btn.btn-primary(type='button', onclick='countReport()') Report
+  #currentCount.modal.fade(role='dialog', tabindex='-1', aria-labeledby='reportLabel', aria-hidden='true')
+    .modal-dialog.modal-lg
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#currentLabel.modal-title Cluster for Report
+        #currentBody.modal-body
+          table(id="currentTable")
+            thead
+              tr
+                th count
+                th dbName
+                th ipAddr
+                th name
+                th tableName
+                th updatedAt
+        .modal-footer
+          a(id="current_download" href="" download="row_count.csv" style="float: left;") Download Report
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+  #progress.modal.fade(role='dialog', tabindex='-1', aria-labeledby='progLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal')
+            span(aria-hidden='true') ×
+            span.sr-only Close
+          h4#progLabel.modal-title Generating Report
+        #progBody.modal-body
+          .progress
+            .progress-bar(role='progressbar', aria-valuenow='0', aria-valuemin='0', aria-valuemax='100', style='width: 0%;')
+              span.sr-only
+        .modal-footer
+          a(id="prog_download" href="" download="row_count.csv" style="visibility: hidden; float: left;") Download Report
+          span(style='display: inline;')
+            p(style='display: inline;') Total: 
+            p#total(style='display: inline;')
+            br
+            p(style='display: inline;')  Done: 
+            p#done(style='display: inline;')
+  .ajax_busy
+  script.
+    var count = 0;
+    var total = 0;
+    var socket = io();
+    socket.on('gauges', function (data) {
+        data.forEach(function(v,i){
+          var cluster = v.cluster;
+        var hosts = v.children;
+        var dials = d3.select('#'+cluster+'OVER').selectAll('svg')
+          .data(hosts).each(gaugesUpdate);
+        });
+    });
+    socket.on('services', function(data){
+      data.forEach(function(v,i){
+        var cluster = v.cluster;
+        var hosts = v.hosts;
+        serviceColor(cluster, hosts);
+      });
+    });
+    socket.on('tick', function(){
+      console.log('tick');
+      count +=1;
+      var per = (count / total) * 100;
+      console.log(per);
+      $('#done').text(count);
+      $('.progress-bar').css('width', per+'%').attr('aria-valuenow', per);
+    });
+    socket.on("countDone", function(obj, fn){
+      console.log('done count:',obj);
+      $('#prog_download').css('visibility', 'visible');
+      $("a#prog_download").click(function(){
+        fn('good');
+        var now = JSON.stringify(obj);
+        this.href = "data:text/plain;charset=UTF-8,"+encodeURIComponent(now);
+        $('#prog_download').css('visibility', 'hidden');
+        $('#progress').modal('hide');
+      });
+    });
+    socket.on("numTables", function(obj){
+      total += obj.total;
+      $('#total').text(total);
+    });
+    function rowCounts(){
+      $.getJSON('/rowCounts', function(info){
+        console.log(info);
+      });
+    }
+    function countReport(){
+      var ip = $("#clusterSelect").val();
+      var name = $("#clusterSelect").text();
+      var load = {};
+      load.ip = ip;
+      load.name = name;
+      $('#reportSelect').modal('hide');
+      $('#progress').modal('show');
+      socket.emit('countStart', load);
+    }
+    function currentCounts(){
+      $.getJSON('/counts', function(data){
+        $("a#current_download").click(function(){
+          var h = '';
+          data.forEach(function(v){
+            var str = v.dbName+','+v.tableName+','+v.count+','+v.updatedAt+','+v.name+','+v.ipAddr+'\n';
+            h += str;
+          });
+          this.href = "data:text/plain;charset=UTF-8,"+encodeURIComponent(h);
+          $('#currentTable').modal('hide');
+        });
+        $('#currentTable').dynatable({
+          dataset: {
+            records: data
+          }
+        });
+      });
+
+      $('#currentCount').modal('show');
+    }
+    $(document).on({
+      ajaxStart: function() { $("body").addClass("loading"); },
+      ajaxStop: function() { $("body").removeClass("loading"); }    
+    });
+    $(document).ready(function(){
+      width = 200;
+      height = 400;
+      margin = 40;
+      rad = 90;
+      x = 3;
+      W = window;
+      D = document;
+      E = D.documentElement;
+      G = D.getElementsByTagName('body')[0];
+      X = W.innerWidth || E.clientWidth || G.clientWidth;
+      Y = W.innerHeight|| E.clientHeight|| G.clientHeight;
+
+      xScale = d3.scale.linear()
+        .domain([0, x])
+        .range([0, width]);
+
+      var win = X-30;
+      winScale = d3.scale.linear()
+        .domain([0, 4])
+        .range([0, win]);
+
+      $.getJSON('/alerts', function(data){
+        data.forEach(function(item){
+          display(item);
+        });
+      });
+      $.getJSON('/services', function(services){
+        services.forEach(function(c){
+          var cluster = c.name;
+          var hosts = c.hosts;
+          service(cluster, hosts);
+        });
+      });
+      $.getJSON('/gauges', function(data){
+        data.forEach(function(item){
+          gauges(item);
+        });
+      });
+      $.getJSON('/users', function(data){
+        data.forEach(function(item){
+          users(item);
+        });
+      });
+    });

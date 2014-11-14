@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+var https = require('https');
+var fs = require('fs');
+var debug = require('debug')('express-example');
+var app = require('../app');
+var models = require("../models");
+
+var options = {
+	key: fs.readFileSync('./server.key'),
+	cert: fs.readFileSync('./server.crt')
+};
+
+models.sequelize.sync().success(function () {
+	//app.listen(3000);
+	https.createServer(options, app).listen(443);
+});
